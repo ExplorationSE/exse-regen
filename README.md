@@ -8,7 +8,7 @@ Regenradar als Web-App (PWA) für das Android-Handy (Chrome): aktuelle Regenkart
 - Regenkarte des **Deutschen Wetterdienstes** (WMS-Layer `dwd:Niederschlagsradar`, RV-Produkt, 1 km, alle 5 Minuten), Bildabstand 5 Minuten von −2 h bis +2 h (49 Bilder, nächstliegende zuerst geladen, bereits geladene Bilder werden bei der Aktualisierung wiederverwendet)
 - Standort per GPS mit Markierung, Knopf zum Zentrieren; letzter Standort wird gespeichert
 - Zeile „Am Standort“: trocken / leichter, mäßiger, starker Regen, „Regen ab ca. …“ bzw. „trocken ab ca. …“ (DWD GetFeatureInfo, Zeitreihe am Standort)
-- Abspielen/Anhalten, Zeitleiste zum Wischen, Knopf „Jetzt“, Anzeige „Stand“ (Zeit des letzten Radarbilds)
+- Zeitleiste über die volle Breite mit großem Regler (gut mit dem Finger zu ziehen), Abspielen/Anhalten links und Knopf „Jetzt“, Anzeige „Stand“ (Zeit des letzten Radarbilds)
 - Automatische Aktualisierung alle 5 Minuten und beim Zurückkehren in die App
 - Legende in mm/h (Farbstufen des DWD)
 - Außerhalb des DWD-Gebiets oder bei DWD-Ausfall: RainViewer (nur Vergangenheit, ohne Vorhersage)

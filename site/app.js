@@ -264,7 +264,7 @@ function setLegend(src) {
   if (src === 'rv') { el.innerHTML = '<div class="lbar" style="background:linear-gradient(90deg,#726e61,#88ddee,#0099cc,#0077aa,#005588,#ffee00,#ffaa00,#ff4400,#c10000,#ffaaff)"></div><div class="llab"><span>schwach</span><span class="end" style="left:100%">stark</span></div>'; return; }
   const n = DWD_LEG.length;
   el.innerHTML = '<div class="lbar">' + DWD_LEG.map(([, c]) => `<i style="background:${c}"></i>`).join('') + '</div><div class="llab">' +
-    [[0, '0,1 mm/h'], [3, '1'], [6, '5'], [9, '15'], [11, '45'], [13, '100'], [n, '150']].map(([i, t]) => `<span${i === n ? ' class="end"' : ''} style="left:${i / n * 100}%">${t}</span>`).join('') + '</div>';
+    [[0, '0,1'], [3, '1'], [6, '5'], [9, '15'], [11, '45'], [n, '150 mm/h']].map(([i, t]) => `<span${i === n ? ' class="end"' : ''} style="left:${i / n * 100}%">${t}</span>`).join('') + '</div>';
 }
 
 // ---------- Ablauf ----------
