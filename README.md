@@ -1,5 +1,7 @@
 # ExSE Regen
 
+**Live:** https://explorationse.github.io/exse-regen/
+
 Regenradar als Web-App (PWA) für das Android-Handy (Chrome): aktuelle Regenkarte, zentriert auf den eigenen Standort, mit Animation der letzten 2 Stunden und Vorhersage für die nächsten 2 Stunden.
 
 ## Funktionen
@@ -41,3 +43,9 @@ tools/
 cd site && python3 -m http.server 8091
 node tools/shot.js 412 915 screenshot.png 52.52 13.405 more
 ```
+
+## Installation auf dem Handy
+In Chrome https://explorationse.github.io/exse-regen/ öffnen, Standort erlauben, dann Menü ⋮ → „Zum Startbildschirm hinzufügen“ bzw. „App installieren“.
+
+## Veröffentlichung
+GitHub Pages über den Workflow `.github/workflows/pages.yml` (veröffentlicht den Ordner `site/` bei jedem Push auf `main`).
