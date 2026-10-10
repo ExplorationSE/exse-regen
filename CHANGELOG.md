@@ -1,5 +1,10 @@
 # Änderungen
 
+## Version 0.2.1 (10.10.2026)
+- Fehlerbehebung Installation auf Android: Manifest-`id` war „./“ und wurde von Chrome zu `https://explorationse.github.io/` (Ursprung) aufgelöst – keine eindeutige App-Kennung neben „ExSE Kurs“ auf demselben Ursprung. Jetzt `id`, `start_url` und `scope` = `/exse-regen/` (wie bei ExSE Kurs `/aktien-app/`).
+- `orientation` „any“ (wie ExSE Kurs), Symbol-Dateinamen neu (`-v2-`), damit Chrome die Symbole frisch lädt.
+- README-Formulierung korrigiert. SW-Cache regen-v4.
+
 ## Version 0.2 (10.10.2026)
 - Zeitleiste in eigener Zeile über die volle Breite (Rand wie die Karte), dicke Spur (12 px), großer Regler (30 px), Berührfläche 44 px hoch, Ziehen ohne Mitscrollen (touch-action: none).
 - Vergangenheit grau, Vorhersage preußischblau; Beschriftung −2 h / Jetzt / +2 h darunter.
