@@ -7,7 +7,7 @@ const [W, H, out, lat, lon] = [+(process.argv[2] || 412), +(process.argv[3] || 9
   const p = await ctx.newPage(); const errs = [];
   p.on('pageerror', e => errs.push(e.message)); p.on('console', m => (m.type() === 'error' || m.type() === 'warning') && errs.push(m.text()));
   const t0 = Date.now();
-  await p.goto('http://localhost:8091/', { waitUntil: 'load' });
+  await p.goto((process.env.URL || 'http://localhost:8091/'), { waitUntil: 'load' });
   await p.waitForFunction(() => window.S && S.frames.length && S.frames[S.nowIdx].url, null, { timeout: 120000 }).catch(() => {});
   console.log('erstes Radarbild nach', Date.now() - t0, 'ms');
   await p.waitForFunction(() => /Stand|nicht/.test(document.getElementById('stateTxt').textContent) && !/Lade/.test(document.getElementById('stateTxt').textContent), null, { timeout: 120000 });
@@ -18,6 +18,7 @@ const [W, H, out, lat, lon] = [+(process.argv[2] || 412), +(process.argv[3] || 9
   console.log('Frames:', await p.evaluate(() => S.frames.length + ' gesamt, ' + S.frames.filter(f => f.url).length + ' geladen, jetzt=' + S.nowIdx));
   await p.screenshot({ path: out });
   if (process.argv[7] === 'more') {
+    const t1 = Date.now(); await p.evaluate(() => { S.loadedAt = 0; }); await p.waitForTimeout(100);
     await p.evaluate(() => showFrame(S.frames.length - 1)); await p.waitForTimeout(500);
     console.log(JSON.stringify(await info())); await p.screenshot({ path: out.replace('.png', '-vorhersage.png') });
     await p.click('#play'); await p.waitForTimeout(2000); console.log('play ->', await p.evaluate(() => S.idx + ' ' + S.playing)); await p.click('#play');

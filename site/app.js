@@ -6,8 +6,8 @@ const WMS = 'https://maps.dwd.de/geoserver/dwd/wms';
 const CAPS = 'https://maps.dwd.de/geoserver/dwd/Niederschlagsradar/ows?service=WMS&version=1.3.0&request=GetCapabilities';
 const LAYER = 'dwd:Niederschlagsradar';
 const DWD_BOX = { s: 45.7, w: 1.5, n: 56.2, e: 18.7 };       // Abdeckung laut GetCapabilities
-const STEP = 10, PAST = 120;                                    // Bildabstand 10 min, 2 h Vergangenheit
-const REFRESH = 5 * 60e3, PLAY_MS = 550, END_PAUSE = 1400, OPACITY = 0.78;
+const STEP = 5, PAST = 120;                                     // Bildabstand 5 min, 2 h Vergangenheit
+const REFRESH = 5 * 60e3, PLAY_MS = 350, END_PAUSE = 1400, OPACITY = 0.78;
 const ZOOM = 7.5;                                               // Startzoom am Standort (ca. 120 km Breite)
 const DEF = { lat: 51.16, lon: 10.45, z: 6 };                   // Deutschland, falls kein Standort
 const $ = id => document.getElementById(id);
@@ -18,7 +18,7 @@ const ICON_PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6.5" y
 // DWD-Farbstufen (aus GetLegendGraphic), mm/h
 const DWD_LEG = [[.1, '#33ffff'], [.2, '#1acc9a'], [.4, '#019934'], [1, '#4db31b'], [2, '#99cc01'], [3, '#cce601'], [5, '#ffff01'], [7.5, '#ffc401'], [10, '#ff8901'], [15, '#ff4501'], [30, '#fe0000'], [45, '#e5004c'], [75, '#cc0098'], [100, '#6600cb'], [150, '#0000fe']];
 
-const S = { src: 'dwd', frames: [], idx: 0, nowIdx: 0, playing: false, timer: null, ref: null, end: null, pos: null, loadedAt: 0, gen: 0, box: null, ctrl: null };
+const S = { src: 'dwd', frames: [], idx: 0, nowIdx: 0, playing: false, timer: null, ref: null, end: null, pos: null, loadedAt: 0, gen: 0, box: null, ctrl: null, cache: new Map() };
 
 // ---------- Karte (MapLibre GL, Grundkarte OpenFreeMap „Dark“, ohne Schlüssel) ----------
 const STYLE = 'https://tiles.openfreemap.org/styles/dark';
@@ -93,7 +93,7 @@ function labelRel(f) {
   const m = Math.round((f.t - S.ref) / 60e3);
   if (m === 0) return 'Jetzt';
   const a = Math.abs(m), s = m < 0 ? '−' : '+';
-  return a % 60 === 0 ? `${s}${a / 60} h` : `${s}${a} min`;
+  return a % 60 === 0 ? `${s}${a / 60} h` : a > 60 ? `${s}${Math.floor(a / 60)} h ${a % 60} min` : `${s}${a} min`;
 }
 function showFrame(i) {
   if (!S.frames.length) return;
@@ -158,10 +158,15 @@ async function loadImages() {
   // lädt alle Bilder für den aktuellen Ausschnitt, zuerst „Jetzt“, dann nach außen
   const gen = ++S.gen; if (S.ctrl) S.ctrl.abort(); const ctrl = S.ctrl = new AbortController();
   const box = S.box = viewBox(); let placed = false;
-  S.frames.forEach(f => { if (f.url) URL.revokeObjectURL(f.url); f.url = null; });
-  const order = S.frames.map((f, i) => i).sort((a, b) => Math.abs(a - S.nowIdx) - Math.abs(b - S.nowIdx) || b - a);
-  if (order.includes(S.idx)) { order.splice(order.indexOf(S.idx), 1); order.unshift(S.idx); }
-  let done = 0, fail = 0;
+  // Bereits geladene Bilder (gleicher Ausschnitt, gleiche Zeit, gleicher Lauf) wiederverwenden, Rest freigeben
+  const key = f => box.bbox + '|' + box.W + 'x' + box.H + '|' + iso(f.t) + (f.t > S.ref ? '|' + iso(S.ref) : '');
+  const keep = new Map();
+  S.frames.forEach(f => { f.key = key(f); const u = S.cache.get(f.key); f.url = u || null; if (u) keep.set(f.key, u); });
+  S.cache.forEach((u, k) => { if (!keep.has(k)) URL.revokeObjectURL(u); }); S.cache = keep;
+  const order = S.frames.map((f, i) => i).filter(i => !S.frames[i].url).sort((a, b) => Math.abs(a - S.nowIdx) - Math.abs(b - S.nowIdx) || b - a);
+  if (order.includes(S.idx) && order[0] !== S.idx) { order.splice(order.indexOf(S.idx), 1); order.unshift(S.idx); }
+  let done = S.frames.filter(f => f.url).length, fail = 0;
+  if (S.frames[S.idx].url) { placed = true; setRadarImage(S.frames[S.idx].url, box.coords); }
   const one = async i => {
     const f = S.frames[i];
     for (let a = 0; a < 2; a++) {
@@ -169,7 +174,7 @@ async function loadImages() {
         const r = await fetch(frameUrl(f, box), { signal: ctrl.signal });
         if (!r.ok || !(r.headers.get('content-type') || '').startsWith('image/')) throw new Error('kein Bild');
         const blob = await r.blob(); if (gen !== S.gen) return;
-        f.url = URL.createObjectURL(blob); done++;
+        f.url = URL.createObjectURL(blob); S.cache.set(f.key, f.url); done++;
         if (!placed && i === S.idx) { placed = true; setRadarImage(f.url, box.coords); showFrame(S.idx); }
         if (done + fail < S.frames.length) state(`Lade Radarbilder … ${done}/${S.frames.length}`);
         return;
@@ -177,7 +182,7 @@ async function loadImages() {
     }
     fail++;
   };
-  const queue = order.slice(), workers = Array.from({ length: 4 }, async () => { while (queue.length && gen === S.gen) await one(queue.shift()); });
+  const queue = order.slice(), workers = Array.from({ length: 6 }, async () => { while (queue.length && gen === S.gen) await one(queue.shift()); });
   await Promise.all(workers);
   if (gen !== S.gen) return;
   if (!done) throw new Error('Keine Radarbilder');
@@ -223,7 +228,6 @@ async function loadDWD() {
   S.ref = ref; S.end = end; S.src = 'dwd';
   const fr = [];
   for (let t = +ref - PAST * 60e3; t <= +end; t += STEP * 60e3) fr.push({ t: new Date(t), url: null });
-  S.frames.forEach(f => f.url && URL.revokeObjectURL(f.url));
   S.frames = fr; S.nowIdx = fr.findIndex(f => +f.t === +ref);
   S.idx = keepFuture || S.playing ? Math.min(fr.length - 1, Math.max(0, S.nowIdx + rel)) : S.nowIdx;
   buildTicks(); showFrame(S.idx);
@@ -295,5 +299,5 @@ $('nowBtn').addEventListener('click', () => { setPlaying(false); showFrame(S.now
 $('locBtn').addEventListener('click', async () => { const p = await locate(true); if (p) { if (!S.pos || inDWD(p) !== (S.src === 'dwd')) refresh(false); else pointForecast(p); } });
 setInterval(() => { if (!document.hidden && Date.now() - S.loadedAt >= REFRESH) refresh(true); }, 30e3);
 document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - S.loadedAt >= 2 * 60e3) refresh(true); });
-window.S = S; window.showFrame = showFrame; // für Tests
+window.S = S; window.showFrame = showFrame; window.refresh = refresh; // für Tests
 setPlaying(false); setLegend('dwd'); refresh(true);
