@@ -25,6 +25,12 @@ Regenradar als Web-App (PWA) für das Android-Handy (Chrome): aktuelle Regenkart
 
 Hinweis: Die früher übliche CARTO-Grundkarte (`basemaps.cartocdn.com`) liefert seit 25.09.2026 ohne API-Schlüssel nur noch den Hinweis „API KEY REQUIRED“ und wird deshalb nicht verwendet.
 
+## Lizenz
+
+- **Eigener Code:** MIT-Lizenz, © 2026 Stefan Eilers – siehe [LICENSE](LICENSE).
+- **Fremdbestandteile** (MapLibre GL JS, BSD-3-Clause; Schrift Marcellus, SIL OFL 1.1): siehe [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
+- **Daten** von Deutschem Wetterdienst, RainViewer, OpenFreeMap/OpenMapTiles und OpenStreetMap (ODbL) fallen **nicht** unter die MIT-Lizenz und unterliegen weiterhin den Bedingungen der jeweiligen Anbieter.
+
 ## Aufbau
 ```
 site/            # statische Web-App (wird auf GitHub Pages veröffentlicht)

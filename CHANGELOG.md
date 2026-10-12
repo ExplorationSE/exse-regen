@@ -1,5 +1,8 @@
 # Änderungen
 
+## Unveröffentlicht (nur Dokumentation)
+- MIT-Lizenz (`LICENSE`), Hinweise zu Fremdbestandteilen (`THIRD-PARTY-NOTICES.md`) und Abschnitt „Lizenz“ im README. Die App selbst ist unverändert.
+
 ## Version 0.2.1 (10.10.2026)
 - Fehlerbehebung Installation auf Android: Manifest-`id` war „./“ und wurde von Chrome zu `https://explorationse.github.io/` (Ursprung) aufgelöst – keine eindeutige App-Kennung neben „ExSE Kurs“ auf demselben Ursprung. Jetzt `id`, `start_url` und `scope` = `/exse-regen/` (wie bei ExSE Kurs `/aktien-app/`).
 - `orientation` „any“ (wie ExSE Kurs), Symbol-Dateinamen neu (`-v2-`), damit Chrome die Symbole frisch lädt.
