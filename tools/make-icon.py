@@ -1,5 +1,5 @@
 # Erzeugt site/icon.svg für „ExSE Regen“ (Text als Pfade, keine Schriftabhängigkeit)
-# Stil wie „ExSE Kurs“: Schwarz, „ExSE“ in Marcellus weiß, darunter preußischblaues Radar-Motiv
+# Stil wie „ExSE Aktien“: Schwarz, „ExSE“ in Marcellus weiß, darunter preußischblaues Radar-Motiv
 from fontTools.ttLib import TTFont
 from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.transformPen import TransformPen
